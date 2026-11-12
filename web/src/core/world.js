@@ -254,3 +254,19 @@ export function seaPath(a, b, ok) {
   }
   return null;
 }
+
+// --- land masses (connected components of the land graph; used for trade routes & sea transport) ---
+export const LANDMASS = new Int16Array(NREG).fill(-1);
+{
+  let id = 0;
+  for (let i = 0; i < NREG; i++) {
+    if (LANDMASS[i] >= 0) continue;
+    const q = [i];
+    LANDMASS[i] = id;
+    while (q.length) {
+      const u = q.pop();
+      for (const v of REG[u].adj) if (LANDMASS[v] < 0) { LANDMASS[v] = id; q.push(v); }
+    }
+    id++;
+  }
+}

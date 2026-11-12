@@ -63,16 +63,16 @@ export const SHIP_KEYS = ['dd', 'cl', 'bb', 'cv', 'ss'];
  * hard hardness, arm armour, ap piercing, sup supply use, mp manpower, eq equipment need, main = equipment that scales stats.
  */
 export const BAT = {
-  inf:   { name: 'Пехота',          sa: 5,  ha: 0.8, df: 21, br: 3,  hp: 25,  org: 60, w: 2, spd: 4,   hard: 0,    arm: 0,  ap: 4,  sup: 0.07, mp: 1000, eq: { rifle: 100 }, main: 'rifle' },
-  mil:   { name: 'Ополчение',       sa: 2.5, ha: 0.3, df: 12, br: 1.5, hp: 20, org: 40, w: 2, spd: 4,  hard: 0,    arm: 0,  ap: 2,  sup: 0.05, mp: 1000, eq: { rifle: 60 }, main: 'rifle' },
-  cav:   { name: 'Кавалерия',       sa: 5,  ha: 0.8, df: 15, br: 5,  hp: 25,  org: 65, w: 2, spd: 6.4, hard: 0,    arm: 0,  ap: 4,  sup: 0.1,  mp: 1000, eq: { rifle: 110 }, main: 'rifle' },
-  mot:   { name: 'Мотопехота',      sa: 5,  ha: 0.8, df: 21, br: 5,  hp: 25,  org: 60, w: 2, spd: 12,  hard: 0.1,  arm: 0,  ap: 4,  sup: 0.11, mp: 1100, eq: { rifle: 100, truck: 35 }, main: 'rifle', tech: 'mot1' },
-  art:   { name: 'Артиллерия',      sa: 24, ha: 2,   df: 9,  br: 6,  hp: 0.6, org: 0,  w: 3, spd: 4,   hard: 0,    arm: 0,  ap: 5,  sup: 0.2,  mp: 500,  eq: { art: 36 }, main: 'art' },
-  at:    { name: 'ПТ-дивизион',     sa: 4,  ha: 15,  df: 4,  br: 0,  hp: 0.6, org: 0,  w: 1, spd: 4,   hard: 0,    arm: 0,  ap: 60, sup: 0.1,  mp: 500,  eq: { at: 36 }, main: 'at', tech: 'at1' },
+  inf:   { name: 'Пехота',          sa: 5,  ha: 0.8, df: 21, br: 10,  hp: 25,  org: 60, w: 2, spd: 4,   hard: 0,    arm: 0,  ap: 4,  sup: 0.07, mp: 1000, eq: { rifle: 100 }, main: 'rifle' },
+  mil:   { name: 'Ополчение',       sa: 2.5, ha: 0.3, df: 12, br: 5, hp: 20, org: 40, w: 2, spd: 4,  hard: 0,    arm: 0,  ap: 2,  sup: 0.05, mp: 1000, eq: { rifle: 60 }, main: 'rifle' },
+  cav:   { name: 'Кавалерия',       sa: 5,  ha: 0.8, df: 15, br: 12,  hp: 25,  org: 65, w: 2, spd: 6.4, hard: 0,    arm: 0,  ap: 4,  sup: 0.1,  mp: 1000, eq: { rifle: 110 }, main: 'rifle' },
+  mot:   { name: 'Мотопехота',      sa: 5,  ha: 0.8, df: 21, br: 14,  hp: 25,  org: 60, w: 2, spd: 12,  hard: 0.1,  arm: 0,  ap: 4,  sup: 0.11, mp: 1100, eq: { rifle: 100, truck: 35 }, main: 'rifle', tech: 'mot1' },
+  art:   { name: 'Артиллерия',      sa: 24, ha: 2,   df: 9,  br: 8,  hp: 0.6, org: 0,  w: 3, spd: 4,   hard: 0,    arm: 0,  ap: 5,  sup: 0.2,  mp: 500,  eq: { art: 36 }, main: 'art' },
+  at:    { name: 'ПТ-дивизион',     sa: 4,  ha: 15,  df: 4,  br: 2,  hp: 0.6, org: 0,  w: 1, spd: 4,   hard: 0,    arm: 0,  ap: 60, sup: 0.1,  mp: 500,  eq: { at: 36 }, main: 'at', tech: 'at1' },
   aa:    { name: 'Зенитный дивизион', sa: 3, ha: 7,  df: 4,  br: 1,  hp: 0.6, org: 0,  w: 1, spd: 4,   hard: 0,    arm: 0,  ap: 30, sup: 0.1,  mp: 500,  eq: { aa: 36 }, main: 'aa', tech: 'aa1', antiAir: 18 },
-  ltank: { name: 'Лёгкие танки',    sa: 13, ha: 5,   df: 4,  br: 24, hp: 2,   org: 10, w: 2, spd: 10,  hard: 0.8,  arm: 15, ap: 22, sup: 0.2,  mp: 500,  eq: { ltank: 40 }, main: 'ltank', tech: 'ltank1' },
-  mtank: { name: 'Средние танки',   sa: 19, ha: 12,  df: 5,  br: 36, hp: 2,   org: 10, w: 2, spd: 8,   hard: 0.9,  arm: 55, ap: 60, sup: 0.22, mp: 500,  eq: { mtank: 40 }, main: 'mtank', tech: 'mtank1' },
-  htank: { name: 'Тяжёлые танки',   sa: 18, ha: 15,  df: 7,  br: 40, hp: 2,   org: 10, w: 2, spd: 5,   hard: 0.95, arm: 85, ap: 75, sup: 0.3,  mp: 500,  eq: { htank: 30 }, main: 'htank', tech: 'htank1' },
+  ltank: { name: 'Лёгкие танки',    sa: 13, ha: 5,   df: 4,  br: 40, hp: 2,   org: 10, w: 2, spd: 10,  hard: 0.8,  arm: 15, ap: 22, sup: 0.2,  mp: 500,  eq: { ltank: 40 }, main: 'ltank', tech: 'ltank1' },
+  mtank: { name: 'Средние танки',   sa: 19, ha: 12,  df: 5,  br: 60, hp: 2,   org: 10, w: 2, spd: 8,   hard: 0.9,  arm: 55, ap: 60, sup: 0.22, mp: 500,  eq: { mtank: 40 }, main: 'mtank', tech: 'mtank1' },
+  htank: { name: 'Тяжёлые танки',   sa: 18, ha: 15,  df: 7,  br: 70, hp: 2,   org: 10, w: 2, spd: 5,   hard: 0.95, arm: 85, ap: 75, sup: 0.3,  mp: 500,  eq: { htank: 30 }, main: 'htank', tech: 'htank1' },
 };
 export const BAT_KEYS = Object.keys(BAT);
 

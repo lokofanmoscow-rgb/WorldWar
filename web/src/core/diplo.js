@@ -118,14 +118,9 @@ export function joinFaction(G, tag, id) {
     if (e === tag || !G.ctr[e].alive || sameSide(G, e, tag)) continue;
     setWar(G, tag, e, f.leader === tag ? tag : e);
   }
-  // and bring own wars to the faction
-  for (const e of enemies(G, tag).slice()) {
-    if (!G.ctr[e].alive) continue;
-    for (const m of f.members) if (m !== tag && !atWar(G, m, e) && !sameSide(G, m, e)) setWar(G, m, e, e);
-  }
   // puppets follow
   for (const p of Object.values(G.ctr)) if (p.over === tag && p.alive && p.fac !== id) joinFaction(G, p.tag, id);
-  news(G, `${cn(G, tag)} вступает в альянс «${f.name}»`, 'diplo');
+  news(G, `${cn(G, tag)}: вступление в альянс «${f.name}»`, 'diplo');
   warChanged(G);
   return true;
 }
@@ -247,7 +242,7 @@ export function onCapture(G, r, byTag) {
 }
 
 export function surrenderLimit(G, c) {
-  return clamp(0.5 + 0.35 * c.ws + mod(c, 'surrender') + (COUNTRIES[c.tag].major ? 0.1 : 0), 0.3, 0.95);
+  return clamp(0.45 + 0.3 * c.ws + mod(c, 'surrender') + (COUNTRIES[c.tag].major ? 0.12 : 0), 0.3, 0.95);
 }
 /** share of own core victory points lost to enemies */
 export function vpLost(G, tag) {
@@ -353,6 +348,7 @@ export function capitulate(G, tag) {
 
 export function aiPeacePolicy(G, main, loser) {
   const m = G.ctr[main];
+  if ((main === 'SPR' && loser === 'SPA') || (main === 'SPA' && loser === 'SPR')) return 'annex';
   if (m.ideo === 'dem') return 'puppet';
   if (m.ideo === 'com') return COUNTRIES[loser].major || G.ctr[loser]._pop > 12000 ? 'puppet' : 'annex';
   return 'annex';

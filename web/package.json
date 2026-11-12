@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "sim": "node ../tools/sim/sim.mjs",
-    "test": "node ../tools/sim/sim.mjs --years 3 --quiet"
+    "sim": "esbuild ../tools/sim/sim.mjs --bundle --platform=node --format=cjs --log-level=warning --outfile=dist/sim.cjs && node dist/sim.cjs",
+    "test": "npm run sim -- --years 4 --quiet"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"

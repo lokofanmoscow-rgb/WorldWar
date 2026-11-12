@@ -6,7 +6,7 @@ import { mod } from './mods.js';
 import { atWar, canEnter, friendly, onCapture, news } from './diplo.js';
 import { airSupport } from './air.js';
 
-const K_ORG = 0.62;      // organisation damage per hit per day
+const K_ORG = 0.75;      // organisation damage per hit per day
 const K_HP = 0.3;        // hp damage per hit per day
 const EMPTY = [];
 
@@ -261,6 +261,11 @@ function pickFront(divs, width) {
   return out;
 }
 
+/** combat frontage of a region attacked from `dirs` directions */
+export function battleWidth(r, dirs) {
+  return (200 + 100 * Math.min(3, Math.max(0, dirs - 1))) * TERRAIN[REG[r].terrain].width;
+}
+
 function resolveBattle(G, r, atts) {
   let defs = [];
   const all = divsIn(G, r);
@@ -274,7 +279,7 @@ function resolveBattle(G, r, atts) {
   const dirs = new Set();
   let amphAll = true;
   for (const a of atts) { if (a.amph === undefined) { dirs.add(a.r); amphAll = false; } else dirs.add(-1); }
-  const width = (70 + 35 * (dirs.size - 1)) * T.width;
+  const width = battleWidth(r, dirs.size);
   for (const d of atts) { const s = G.ctr[d.o].tpl[d.t]._s; d._w = s.w; d._orgf = d.org / s.org; }
   for (const d of defs) { const s = G.ctr[d.o].tpl[d.t]._s; d._w = s.w; d._orgf = d.org / s.org; }
   const fa = pickFront(atts.slice(), width), fd = pickFront(defs.slice(), width);
@@ -399,7 +404,7 @@ export function landTick(G) {
     if (!d.path.length) {
       d.ret = 0;
       if (d.ent < 15) d.ent++;
-      if (d.org < s.org) d.org = Math.min(s.org, d.org + s.org * (0.1 + 0.1 * mod(c, 'orgRegain')) * (d.sup >= 1 ? 1 : 0.4 + 0.4 * d.sup));
+      if (d.org < s.org) d.org = Math.min(s.org, d.org + s.org * (0.1 + 0.1 * mod(c, 'orgRegain')) * (d.sup >= 1 ? 1 : 0.4 + 0.4 * d.sup) * (G.battles[d.r] ? 0.15 : 1));
       continue;
     }
     const next = d.path[0];
@@ -495,5 +500,5 @@ export function divPower(G, d, defending) {
   const c = G.ctr[d.o];
   const s = c.tpl[d.t]._s;
   const base = defending ? s.df * 0.55 + s.sa * 0.9 + s.ha * 0.4 : s.sa * 1.2 + s.ha * 0.5 + s.br * 0.6 + s.df * 0.15;
-  return base * (0.3 + 0.7 * d.str) * (0.35 + 0.65 * (d.org / s.org)) * (d.sup >= 1 ? 1 : 0.6);
+  return base * (0.3 + 0.7 * d.str) * (0.35 + 0.65 * (d.org / s.org)) * (d.sup >= 1 ? 1 : 0.6) * (1 + mod(c, defending ? 'landDefense' : 'landAttack'));
 }

@@ -129,7 +129,8 @@ function resourceTick(c) {
   need.oil += c._fuel || 0;
   const bal = {}, short = {};
   for (const k of RES_KEYS) {
-    const have = c._res[k] * (1 - c._export) + (c.trade.imp[k] || 0) * (c._convoyEff ?? 1) + Math.max(0, c._res[k] * c._export - (c._sold?.[k] || 0));
+    const sea = (c.trade.sea && c.trade.sea[k]) || 0;
+    const have = c._res[k] * (1 - c._export) + (c.trade.imp[k] || 0) - sea * (1 - (c._convoyEff ?? 1)) + Math.max(0, c._res[k] * c._export - (c._sold?.[k] || 0));
     bal[k] = have - need[k];
     short[k] = need[k] > 0 ? clamp(-bal[k] / need[k], 0, 1) : 0;
   }
@@ -177,7 +178,7 @@ function productionTick(G, c) {
 /** weekly: countries with shortages buy resources from exporters for civilian factories */
 export function tradeTick(G) {
   const list = Object.values(G.ctr).filter((c) => c.alive && !c.capit);
-  for (const c of list) { c.trade = { imp: {}, cost: 0, gain: 0, from: {} }; c._sold = {}; }
+  for (const c of list) { c.trade = { imp: {}, sea: {}, cost: 0, gain: 0, from: {} }; c._sold = {}; c._atWar = isAtWar(G, c.tag); }
   for (const c of list) resourceTick(c);
   const order = list.slice().sort((a, b) => (b.tag === G.player) - (a.tag === G.player) || b._mil - a._mil);
   for (const c of order) {
@@ -194,7 +195,7 @@ export function tradeTick(G) {
         if (market < 1) continue;
         const op = opinion(G, c.tag, e.tag);
         if (op < -60) continue;
-        cands.push([op + (e.fac && e.fac === c.fac ? 50 : 0) + (LANDMASS[e.cap] === LANDMASS[c.cap] ? 20 : 0) + Math.min(30, market), e, market]);
+        cands.push([op + (e.fac && e.fac === c.fac ? 50 : 0) + (LANDMASS[e.cap] === LANDMASS[c.cap] ? (c._atWar ? 90 : 25) : 0) + Math.min(30, market), e, market]);
       }
       cands.sort((a, b) => b[0] - a[0]);
       for (const [, e, market] of cands) {
@@ -203,7 +204,7 @@ export function tradeTick(G) {
         if (amt <= 0) break;
         c.trade.imp[k] = (c.trade.imp[k] || 0) + amt;
         c.trade.from[e.tag] = (c.trade.from[e.tag] || 0) + amt;
-        if (LANDMASS[e.cap] !== LANDMASS[c.cap]) c._seaImports = (c._seaImports || 0) + amt;
+        if (LANDMASS[e.cap] !== LANDMASS[c.cap]) c.trade.sea[k] = (c.trade.sea[k] || 0) + amt;
         e._sold[k] = (e._sold[k] || 0) + amt;
         const civ = amt / 8;
         c.trade.cost += civ; e.trade.gain += civ; spent += civ; want -= amt;
