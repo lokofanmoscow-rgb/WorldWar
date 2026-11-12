@@ -1,0 +1,15 @@
+{
+  "name": "worldwar-genshtab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WorldWar: Генштаб — глобальная стратегия 1936–1948 для Android (WebView)",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "sim": "node ../tools/sim/sim.mjs",
+    "test": "node ../tools/sim/sim.mjs --years 3 --quiet"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
