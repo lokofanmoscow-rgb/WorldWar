@@ -47,6 +47,7 @@ export function analyse(G, c) {
   }
   const want = new Float32Array(NREG);
   const fw = new Float32Array(NREG);
+  const atk = new Uint8Array(NREG);
   const contact = new Float32Array(nc);     // enemy contact weight per component
   const atwar = enemies(G, tag).some((e) => G.ctr[e].alive);
   for (let i = 0; i < NREG; i++) {
@@ -60,10 +61,11 @@ export function analyse(G, c) {
         const sw = STANCES[st.st].w * st.pr * 0.5;
         if (sw <= 0) continue;
         hostile = true;
+        if (st.st === 'attack' || st.st === 'blitz') atk[i] = 1;
         w += sw * (1 + 0.5 * Math.min(6, hostileDivs(G, j, tag).length));
       } else if (pass[i] === 1) w += peaceWeight(G, c, ctl) * (atwar ? 0.25 : 1);
     }
-    if (pass[i] === 2) w = hostile ? w * 0.7 : 0;
+    if (pass[i] === 2) w = hostile ? w * (c.cap >= 0 && distKm(i, c.cap) > 2500 ? 0.12 : 0.7) : 0;
     if (hostile) { w += G.reg[i].vp * 0.05; contact[comp[i]] += w; fw[i] = w; }
     want[i] = w;
   }
@@ -81,7 +83,7 @@ export function analyse(G, c) {
       if (pass[i] === 1 && REG[i].seas.length && (r.port > 0 || r.vp >= 5)) want[i] += 0.2 * c.staff.coast * (r.core === tag ? 1 : 0.5);
     }
   }
-  return { pass, comp, nc, want, contact, atwar };
+  return { pass, comp, nc, want, contact, atwar, atk };
 }
 
 const dest = (d) => (d.path.length ? d.path[d.path.length - 1] : d.r);
@@ -114,7 +116,7 @@ function redeploy(G, c, A, divs) {
       for (const i of active) {
         let others = 0;
         for (const o of divsIn(G, i)) if (o.o !== c.tag) others++;
-        const cap = Math.max(1, Math.min(regionSupplyCap(G, i) / 0.95, (battleWidth(i, 2) / 20) * 2) - others);
+        const cap = Math.max(1, Math.min(regionSupplyCap(G, i) / 0.95, (battleWidth(i, 1) / 20) * (A.atk[i] ? 2.4 : 1.4)) - others);
         const cur = tg.get(i) || 0;
         const add = Math.min((pool * A.want[i]) / Wa, cap - cur);
         tg.set(i, cur + add); used += add;
@@ -212,7 +214,7 @@ function planAttacks(G, c, A, divs) {
     }
     let ourP = committed;
     for (const d of cands) ourP += divPower(G, d, false);
-    const ratio = info.st === 'blitz' ? 1.15 : 1.5;
+    const ratio = info.st === 'blitz' ? 0.9 : 1.1;
     if (ourP < defP * ratio) continue;
     cands.sort((a, b) => divPower(G, b, false) - divPower(G, a, false));
     const keep = new Map();

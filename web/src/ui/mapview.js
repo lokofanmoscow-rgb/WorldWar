@@ -1,7 +1,7 @@
 // Canvas map: regions, borders, labels, unit counters, fleets; pan / pinch-zoom / tap input.
 import { REG, NREG, SEA, ARCS, ARCS_LO, ARC_OWNER, LAKES, RIVERS, MAP_W, MAP_H, TERRAIN, regionAtXY, seaAtXY, regionRings, regionsInRange } from '../core/world.js';
 import { COUNTRIES } from '../data/countries.js';
-import { atWar, friendly, sameSide, opinion } from '../core/diplo.js';
+import { atWar, friendly, sameSide, opinion, enemies } from '../core/diplo.js';
 import { divsIn } from '../core/land.js';
 import { regionSupplyCap } from '../core/supply.js';
 import { planeRange } from '../core/air.js';
@@ -446,6 +446,9 @@ export class MapView {
     const { ctx, G } = this;
     if (s < 0.03) return;
     const pl = G.player;
+    // at small scales only the armies that matter to the player are drawn
+    const showAll = s >= 0.11 || !pl;
+    const relevant = (o) => showAll || o === pl || atWar(G, pl, o) || (sameSide(G, pl, o) && enemies(G, o).length > 0) || this.sel.region >= 0 && false;
     const f = clamp(s / 0.09, 0.78, 1.2);
     const W = 36 * f, H = 22 * f;
     ctx.textBaseline = 'middle';
@@ -454,11 +457,13 @@ export class MapView {
       if (!list.length) continue;
       const groups = new Map();
       for (const d of list) {
+        if (!relevant(d.o)) continue;
         let g = groups.get(d.o);
         if (!g) groups.set(d.o, (g = { o: d.o, n: 0, org: 0, arm: 0, mov: 0, sel: 0, low: 0 }));
         const c = G.ctr[d.o], st = c.tpl[d.t]._s;
         g.n++; g.org += d.org / st.org; if (c.tpl[d.t].icon === 'arm') g.arm++; if (d.path.length) g.mov++; if (this.sel.divs.has(d.id)) g.sel++; if (d.sup < 1) g.low++;
       }
+      if (!groups.size) continue;
       const arr = Array.from(groups.values()).sort((a, b) => (b.o === pl) - (a.o === pl) || b.n - a.n).slice(0, 3);
       const [cx, cy] = this.toScreen(REG[i].c[0], REG[i].c[1]);
       arr.forEach((g, k) => {

@@ -3,8 +3,8 @@ import { build } from 'esbuild';
 import { cpSync, mkdirSync, rmSync, statSync } from 'node:fs';
 
 const dev = process.argv.includes('--dev');
-rmSync('dist/app', { recursive: true, force: true });
-mkdirSync('dist/app', { recursive: true });
+rmSync('dist/www', { recursive: true, force: true });
+mkdirSync('dist/www/app', { recursive: true });
 await build({
   entryPoints: ['src/main.js'],
   bundle: true,
@@ -12,9 +12,9 @@ await build({
   target: ['chrome70'],
   minify: !dev,
   sourcemap: dev ? 'inline' : false,
-  outfile: 'dist/app/game.js',
+  outfile: 'dist/www/app/game.js',
   logLevel: 'warning',
   legalComments: 'none',
 });
-cpSync('public', 'dist/app', { recursive: true });
-console.log('built dist/app: game.js', Math.round(statSync('dist/app/game.js').size / 1024), 'KB');
+cpSync('public', 'dist/www/app', { recursive: true });
+console.log('built dist/www/app: game.js', Math.round(statSync('dist/www/app/game.js').size / 1024), 'KB');

@@ -223,6 +223,7 @@ export function newGame(playerTag, opts = {}) {
   }
   // Second Italo-Ethiopian war is already raging
   G.war[pairKey('ITA', 'ETH')] = { start: -90, att: 'ITA' };
+  G._relDirty = true;
   G.tension = 6;
   // Kwantung army sits in Manchukuo etc.: puppets grant access automatically (see diplo.canEnter)
 

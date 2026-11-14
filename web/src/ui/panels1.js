@@ -266,7 +266,8 @@ PANELS.prod = {
         const E = EQ[l.eq];
         const short = Object.keys(E.res).filter((r) => c._short && c._short[r] > 0.05);
         const need = c.need[l.eq] || 0, have = (c.fielded[l.eq] || 0);
-        h += `<div class="cardx"><div class="ttl">${esc(eqName(c, l.eq))}<small>${(l._out || 0).toFixed(1)} в день</small></div>
+        const est = l._out ?? (l.fac * FACTORY_OUT * l.eff * Math.max(0.2, 1 + mod(c, 'factoryOutput'))) / E.cost;
+        h += `<div class="cardx"><div class="ttl">${esc(eqName(c, l.eq))}<small>${est >= 10 ? Math.round(est) : est.toFixed(1)} в день</small></div>
           <div class="row" style="margin-top:5px">${stepper(l.fac, `lfac|${k}|-1`, `lfac|${k}|1`, l.fac <= 0, free <= 0 || l.fac >= MAX_FAC_PER_LINE)}${btn('+5', `lfac|${k}|5`, 'sm ghost', free <= 0)}${btn('−5', `lfac|${k}|-5`, 'sm ghost', l.fac <= 0)}<div class="grow"></div>${btn(ic('close'), `ldel|${k}`, 'sm ghost')}</div>
           <div class="desc">Эффективность ${pct(l.eff)}${bar(l.eff / lineCap(c), 'g')}</div>
           <div class="desc">Склад: ${fmtNum(c.stock[l.eq] || 0)}${E.kind === 'land' ? ` · в войсках ${fmtNum(have)} из ${fmtNum(need)}` : ''}${short.length ? ` · <span class="neg">не хватает: ${short.map((r) => RES[r].name.toLowerCase()).join(', ')}</span>` : ''}</div></div>`;

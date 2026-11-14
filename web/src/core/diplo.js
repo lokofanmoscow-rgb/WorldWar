@@ -15,7 +15,59 @@ export function news(G, text, kind = 'info', region = -1) {
 export const cn = (G, tag) => (G.ctr[tag] && G.ctr[tag].name) || COUNTRIES[tag].n;
 
 // ---- hostility ---------------------------------------------------------------------------------
-export const atWar = (G, a, b) => a !== b && G.war[a < b ? a + '|' + b : b + '|' + a] !== undefined;
+// Relations between every pair of countries are cached in a byte matrix (bit 1: war, bit 2: friendly).
+const TAGS = Object.keys(COUNTRIES);
+const NT = TAGS.length;
+const IDX = {};
+TAGS.forEach((t, i) => { IDX[t] = i; });
+function friendlyRaw(G, a, b) {
+  const ca = G.ctr[a], cb = G.ctr[b];
+  if (!ca || !cb) return false;
+  if (ca.fac && ca.fac === cb.fac) return true;
+  if (ca.over === b || cb.over === a) return true;
+  if (ca.over && ca.over === cb.over) return true;
+  if (G.pacts.access[a + '>' + b]) return true;
+  return false;
+}
+export function relMatrix(G) {
+  if (G._rel && !G._relDirty) return G._rel;
+  const M = G._rel || new Uint8Array(NT * NT);
+  M.fill(0);
+  for (const key in G.war) {
+    const k = key.indexOf('|');
+    const ia = IDX[key.slice(0, k)], ib = IDX[key.slice(k + 1)];
+    if (ia === undefined || ib === undefined) continue;
+    M[ia * NT + ib] |= 1; M[ib * NT + ia] |= 1;
+  }
+  // faction / overlord ties are symmetric
+  for (let i = 0; i < NT; i++) {
+    const ci = G.ctr[TAGS[i]];
+    if (!ci) continue;
+    const fi = ci.fac || ci.over;
+    for (let j = i + 1; j < NT; j++) {
+      const cj = G.ctr[TAGS[j]];
+      if (!cj || !(fi || cj.fac || cj.over)) continue;
+      if ((ci.fac && ci.fac === cj.fac) || ci.over === TAGS[j] || cj.over === TAGS[i] || (ci.over && ci.over === cj.over)) { M[i * NT + j] |= 2; M[j * NT + i] |= 2; }
+    }
+  }
+  for (const key in G.pacts.access) {
+    const k = key.indexOf('>');
+    const ia = IDX[key.slice(0, k)], ib = IDX[key.slice(k + 1)];
+    if (ia !== undefined && ib !== undefined) M[ia * NT + ib] |= 2;
+  }
+  G._rel = M; G._relDirty = false;
+  return M;
+}
+export const relDirty = (G) => { G._relDirty = true; };
+/** uncached versions, used by tests to validate the cache */
+export const atWarRaw = (G, a, b) => a !== b && G.war[a < b ? a + '|' + b : b + '|' + a] !== undefined;
+export { friendlyRaw };
+export function atWar(G, a, b) {
+  if (a === b) return false;
+  const ia = IDX[a], ib = IDX[b];
+  if (ia === undefined || ib === undefined) return false;
+  return (relMatrix(G)[ia * NT + ib] & 1) !== 0;
+}
 
 export function enemies(G, tag) {
   if (!G._en) {
@@ -35,13 +87,9 @@ export const activeEnemies = (G, tag) => enemies(G, tag).filter((e) => G.ctr[e].
 
 export function friendly(G, a, b) {
   if (a === b) return true;
-  const ca = G.ctr[a], cb = G.ctr[b];
-  if (!ca || !cb) return false;
-  if (ca.fac && ca.fac === cb.fac) return true;
-  if (ca.over === b || cb.over === a) return true;
-  if (ca.over && ca.over === cb.over) return true;
-  if (G.pacts.access[a + '>' + b]) return true;
-  return false;
+  const ia = IDX[a], ib = IDX[b];
+  if (ia === undefined || ib === undefined) return false;
+  return (relMatrix(G)[ia * NT + ib] & 2) !== 0;
 }
 export function canEnter(G, tag, r) {
   const ctl = G.reg[r].c;
@@ -95,7 +143,7 @@ export function frontFlags(G) {
   G._frontReg = f; G._frontDirty = false;
   return f;
 }
-export function warChanged(G) { G._en = null; G._frontDirty = true; G._supDirty = true; }
+export function warChanged(G) { G._en = null; G._frontDirty = true; G._supDirty = true; G._relDirty = true; }
 
 // ---- factions ------------------------------------------------------------------------------------
 export function createFaction(G, leader, name, id) {
@@ -103,6 +151,7 @@ export function createFaction(G, leader, name, id) {
   if (G.factions[id]) return id;
   G.factions[id] = { name, leader, members: [leader] };
   G.ctr[leader].fac = id;
+  G._relDirty = true;
   return id;
 }
 export function joinFaction(G, tag, id) {
@@ -111,6 +160,7 @@ export function joinFaction(G, tag, id) {
   if (!f || c.fac === id) return false;
   if (c.fac) leaveFaction(G, tag);
   c.fac = id;
+  G._relDirty = true;
   if (!f.members.includes(tag)) f.members.push(tag);
   for (const m of f.members) if (m !== tag) changeOpinion(G, tag, m, 30);
   // join the wars of the faction leader
@@ -128,6 +178,7 @@ export function leaveFaction(G, tag) {
   const c = G.ctr[tag];
   const f = G.factions[c.fac];
   c.fac = null;
+  G._relDirty = true; G._en = null; G._frontDirty = true;
   if (!f) return;
   f.members = f.members.filter((m) => m !== tag);
   if (!f.members.length) { for (const id in G.factions) if (G.factions[id] === f) delete G.factions[id]; return; }
@@ -154,7 +205,7 @@ function setWar(G, a, b, attacker) {
   delete G.pacts.guar[a + '>' + b];
   delete G.pacts.guar[b + '>' + a];
   G.ctr[a].rel[b] = -100; G.ctr[b].rel[a] = -100;
-  G._en = null;
+  G._en = null; G._relDirty = true;
 }
 function closure(G, tag) {
   const set = new Set([tag]);
@@ -490,7 +541,7 @@ export function annexCountry(G, target, by) {
 // ---- treaties ------------------------------------------------------------------------------------
 export function signNAP(G, a, b) { G.pacts.nap[pairKey(a, b)] = G.day; changeOpinion(G, a, b, 15); }
 export function guarantee(G, a, b) { G.pacts.guar[a + '>' + b] = G.day; changeOpinion(G, a, b, 20); }
-export function grantAccess(G, guest, host) { G.pacts.access[guest + '>' + host] = G.day; }
+export function grantAccess(G, guest, host) { G.pacts.access[guest + '>' + host] = G.day; G._relDirty = true; G._supDirty = true; }
 export const hasNAP = (G, a, b) => G.pacts.nap[pairKey(a, b)] !== undefined;
 
 export function justifyDays(G, a, b) {

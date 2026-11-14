@@ -5,7 +5,7 @@ import { divsOf, buildIndex } from './land.js';
 
 export function regionSupplyCap(G, i) {
   const r = G.reg[i];
-  return (8 + 7 * r.infra) * TERRAIN[REG[i].terrain].sup * (r.port > 0 ? 1.2 : 1);
+  return (6 + 5 * r.infra) * TERRAIN[REG[i].terrain].sup * (r.port > 0 ? 1.2 : 1);
 }
 
 /** recompute d.sup for every division (0 = cut off … 1 = fully supplied) */

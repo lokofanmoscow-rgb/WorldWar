@@ -3,7 +3,7 @@
 import { startGame, tick, serialize, deserialize } from '../../web/src/core/game.js';
 import { fmtDate, dayOf } from '../../web/src/core/util.js';
 import { divsOf } from '../../web/src/core/land.js';
-import { enemies } from '../../web/src/core/diplo.js';
+import { enemies, atWar, friendly, atWarRaw, friendlyRaw } from '../../web/src/core/diplo.js';
 import { shipsTotal } from '../../web/src/core/navy.js';
 import { COUNTRIES } from '../../web/src/data/countries.js';
 
@@ -29,6 +29,12 @@ function check() {
   }
   for (const id in G.divs) { const d = G.divs[id]; if (!Number.isFinite(d.org) || !Number.isFinite(d.str)) throw new Error('NaN division ' + JSON.stringify(d)); }
   for (const w of G.wings) if (!Number.isFinite(w.n)) throw new Error('NaN wing');
+  const tags = Object.keys(G.ctr);
+  for (const a of tags) for (const b of tags) {
+    if (a === b) continue;
+    if (atWar(G, a, b) !== atWarRaw(G, a, b)) throw new Error(`war cache mismatch ${a} ${b}`);
+    if (friendly(G, a, b) !== friendlyRaw(G, a, b)) throw new Error(`friend cache mismatch ${a} ${b}`);
+  }
 }
 while (G.day < end) {
   const t1 = process.hrtime.bigint();

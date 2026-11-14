@@ -1,0 +1,67 @@
+plugins {
+    id 'com.android.application'
+}
+
+// The game itself is a web bundle: run `npm run build` in ../web first (CI does it automatically).
+def webDir = file('../../web/dist/www')
+
+android {
+    namespace 'com.worldwar.genshtab'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.worldwar.genshtab'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+
+    signingConfigs {
+        release {
+            // Sideload key kept in the repository so that every build can update an installed copy.
+            // Replace it with your own private key before publishing to an app store.
+            storeFile file('../keystore/worldwar.jks')
+            storePassword 'worldwar1936'
+            keyAlias 'worldwar'
+            keyPassword 'worldwar1936'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.release
+        }
+    }
+
+    sourceSets {
+        main {
+            assets.srcDirs = [webDir]
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+tasks.register('checkWebBundle') {
+    doLast {
+        if (!new File(webDir, 'app/index.html').exists()) {
+            throw new GradleException("Web bundle not found in ${webDir}. Run: cd web && npm install && npm run build")
+        }
+    }
+}
+preBuild.dependsOn checkWebBundle

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 108dp adaptive icon foreground: globe with a red star and crossed lines (original artwork) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#F2EAD8" android:pathData="M54,26a28,28 0,1 1,0 56a28,28 0,1 1,0 -56z"/>
+    <path android:strokeColor="#7A2A22" android:strokeWidth="2.2" android:fillColor="#00000000"
+        android:pathData="M26,54h56M54,26v56M54,26c-10,8 -10,48 0,56M54,26c10,8 10,48 0,56M30,41h48M30,67h48"/>
+    <path android:fillColor="#C8372B" android:strokeColor="#1B2530" android:strokeWidth="1.5"
+        android:pathData="M54,36l4.8,10.4 11.3,1.2 -8.4,7.6 2.4,11.1 -10.1,-5.8 -10.1,5.8 2.4,-11.1 -8.4,-7.6 11.3,-1.2z"/>
+</vector>

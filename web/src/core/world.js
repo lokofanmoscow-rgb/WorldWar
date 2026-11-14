@@ -204,14 +204,40 @@ export function findPath(from, to, cost, maxCost = 1e9) {
   const prev = new Int32Array(NREG).fill(-1);
   const done = new Uint8Array(NREG);
   dist[from] = 0;
-  // small binary heap
-  const heap = [[0, from]];
-  while (heap.length) {
-    // pop min
-    let mi = 0;
-    for (let i = 1; i < heap.length; i++) if (heap[i][0] < heap[mi][0]) mi = i;
-    const [d, u] = heap[mi];
-    heap[mi] = heap[heap.length - 1]; heap.pop();
+  // binary heap of (cost, node) pairs in two parallel arrays
+  const hk = [0], hv = [from];
+  const push = (k, v) => {
+    let i = hk.length;
+    hk.push(k); hv.push(v);
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (hk[p] <= k) break;
+      hk[i] = hk[p]; hv[i] = hv[p]; i = p;
+    }
+    hk[i] = k; hv[i] = v;
+  };
+  const pop = () => {
+    const k0 = hk[0], v0 = hv[0];
+    const k = hk.pop(), v = hv.pop();
+    const n = hk.length;
+    if (n) {
+      let i = 0;
+      for (;;) {
+        let c = 2 * i + 1;
+        if (c >= n) break;
+        if (c + 1 < n && hk[c + 1] < hk[c]) c++;
+        if (hk[c] >= k) break;
+        hk[i] = hk[c]; hv[i] = hv[c]; i = c;
+      }
+      hk[i] = k; hv[i] = v;
+    }
+    _pk = k0;
+    return v0;
+  };
+  let _pk = 0;
+  while (hk.length) {
+    const u = pop();
+    const d = _pk;
     if (done[u]) continue;
     done[u] = 1;
     if (u === to) break;
@@ -223,7 +249,7 @@ export function findPath(from, to, cost, maxCost = 1e9) {
       const c = cost(u, v);
       if (!(c < Infinity)) continue;
       const nd = d + c;
-      if (nd < dist[v]) { dist[v] = nd; prev[v] = u; heap.push([nd, v]); }
+      if (nd < dist[v]) { dist[v] = nd; prev[v] = u; push(nd, v); }
     }
   }
   if (prev[to] < 0) return null;

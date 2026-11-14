@@ -75,6 +75,7 @@ function fuelTick(G, c) {
 /** advance the simulation by one day */
 export function tick(G) {
   G.day++;
+  G._relDirty = true;
   recount(G);
   geoCache(G);
   frontFlags(G);
