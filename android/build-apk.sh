@@ -35,6 +35,6 @@ cp "$B/base.apk" "$B/unaligned.apk"
 # 3. align + sign
 "$BT/zipalign" -f -p 4 "$B/unaligned.apk" "$B/aligned.apk"
 "$BT/apksigner" sign --ks keystore/worldwar.jks --ks-pass pass:worldwar1936 --key-pass pass:worldwar1936 \
-  --ks-key-alias worldwar --out "$OUT" "$B/aligned.apk"
+  --ks-key-alias worldwar --v4-signing-enabled false --out "$OUT" "$B/aligned.apk"
 "$BT/apksigner" verify "$OUT"
 echo "APK: $OUT ($(du -h "$OUT" | cut -f1))"

@@ -275,7 +275,8 @@ PANELS.navy = {
     const fleets = G.fleets.filter((f) => f.o === c.tag);
     const tot = shipsTotal(G, c.tag);
     let h = `<div class="row">${btn(`${ic('layers')} Морская карта`, 'mode|nav', 'sm ghost')}</div>`;
-    h += `<div class="kv" style="margin-top:6px"><span>Всего кораблей</span><span>${SHIP_KEYS.map((k) => `${SHIP[k].short} ${tot[k]}`).join(' · ')}</span><span>${ic('ship')} Транспорты</span><span>${Math.floor(c.convoys)}${c._convoyNeed ? ` (нужно ${Math.ceil(c._convoyNeed)})` : ''}</span><span>Работа конвоев</span><span class="${(c._convoyEff ?? 1) < 0.9 ? 'neg' : ''}">${pct(c._convoyEff ?? 1)}</span></div>`;
+    h += `<div class="grid3" style="margin-top:6px;font-size:13px">${SHIP_KEYS.map((k) => `<div class="cardx" style="margin:0;text-align:center"><b style="font-size:17px">${tot[k]}</b><br>${SHIP[k].short}</div>`).join('')}<div class="cardx" style="margin:0;text-align:center"><b style="font-size:17px">${Math.floor(c.convoys)}</b><br>Транспорты</div></div>`;
+    h += `<div class="kv" style="margin-top:6px"><span>${ic('ship')} Нужно транспортов</span><span>${Math.ceil(c._convoyNeed || 0)}</span><span>Работа конвоев</span><span class="${(c._convoyEff ?? 1) < 0.9 ? 'neg' : ''}">${pct(c._convoyEff ?? 1)}</span></div>`;
     h += `<h4>Флоты <small>${fleets.length}</small></h4>`;
     if (!fleets.length) h += '<div class="muted">Флота нет. Постройте верфи и заложите корабли в панели «Заводы → Верфи».</div>';
     for (const f of fleets) {

@@ -169,7 +169,7 @@ function productionTick(G, c) {
     while (l.p >= S.cost) {
       l.p -= S.cost;
       if (l.ship === 'convoy') c.convoys += 5; else addShip(G, c, l.ship);
-      if (c.tag === G.player && l.ship !== 'convoy') news(G, `Спущен на воду корабль: ${S.name.toLowerCase().replace(/ы$/, '')}`, 'info');
+      if (c.tag === G.player && l.ship !== 'convoy') news(G, `Спущен на воду: ${S.one}`, l.ship === 'bb' || l.ship === 'cv' ? 'good' : 'info');
     }
   }
 }

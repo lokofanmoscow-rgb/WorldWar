@@ -110,6 +110,9 @@ export class MapView {
     this.clampCam(); this.dirty = true;
   }
   invalidate(borders) { this.dirty = true; if (borders) this.borderKey = ''; }
+  // helpers for automated UI tests
+  __adj(r) { return REG[r].adj; }
+  __c(r) { return REG[r].c; }
 
   // ---- input ----
   bind() {
@@ -174,10 +177,17 @@ export class MapView {
     window.addEventListener('resize', () => this.resize());
   }
   tap(sx, sy, long) {
-    for (let i = this.hits.length - 1; i >= 0; i--) {
-      const h = this.hits[i];
-      if (sx >= h.x - 3 && sx <= h.x + h.w + 3 && sy >= h.y - 3 && sy <= h.y + h.h + 3) { this.hooks.onHit(h, long); return; }
+    // counters of neighbouring regions may overlap: take the nearest one, preferring our own troops
+    let best = null, bd = 1e9;
+    const pl = this.G && this.G.player;
+    for (const h of this.hits) {
+      if (!(sx >= h.x - 4 && sx <= h.x + h.w + 4 && sy >= h.y - 4 && sy <= h.y + h.h + 4)) continue;
+      let d = Math.hypot(sx - (h.x + h.w / 2), sy - (h.y + h.h / 2));
+      if (h.o === pl) d -= 6;
+      if (h.type === 'battle') d += 4;
+      if (d < bd) { bd = d; best = h; }
     }
+    if (best) { this.hooks.onHit(best, long); return; }
     const [mx, my] = this.toMap(sx, sy);
     const r = regionAtXY(mx, my, 22 / this.cam.s);
     if (r >= 0) { this.hooks.onRegion(r, long); return; }
@@ -351,9 +361,9 @@ export class MapView {
     this.drawLabels(vis, s);
     if (this.mode === 'ind') this.drawIndustry(vis, s);
     if (this.mode === 'air') this.drawAir(vis, s);
-    this.drawArrows(s);
     this.drawFleets(s);
     this.drawStacks(vis, s);
+    this.drawArrows(s);
     this.drawBattles(vis, s);
   }
   text(str, x, y, font, fill, halo) {
@@ -447,10 +457,10 @@ export class MapView {
     if (s < 0.03) return;
     const pl = G.player;
     // at small scales only the armies that matter to the player are drawn
-    const showAll = s >= 0.11 || !pl;
+    const showAll = s >= 0.16 || !pl;
     const relevant = (o) => showAll || o === pl || atWar(G, pl, o) || (sameSide(G, pl, o) && enemies(G, o).length > 0) || this.sel.region >= 0 && false;
-    const f = clamp(s / 0.09, 0.78, 1.2);
-    const W = 36 * f, H = 22 * f;
+    const f = clamp(s / 0.12, 0.72, 1.3);
+    const W = 31 * f, H = 19 * f;
     ctx.textBaseline = 'middle';
     for (const i of vis) {
       const list = divsIn(G, i);
@@ -466,8 +476,9 @@ export class MapView {
       if (!groups.size) continue;
       const arr = Array.from(groups.values()).sort((a, b) => (b.o === pl) - (a.o === pl) || b.n - a.n).slice(0, 3);
       const [cx, cy] = this.toScreen(REG[i].c[0], REG[i].c[1]);
+      // several nations in one region: counters are stacked like a deck of cards
       arr.forEach((g, k) => {
-        const x = cx + (k - (arr.length - 1) / 2) * (W + 3) - W / 2, y = cy - H / 2;
+        const x = cx - W / 2 + k * 5, y = cy - H / 2 - (arr.length - 1 - k) * (H * 0.62) + (arr.length - 1) * H * 0.31;
         const col = this.polCol(g.o).full;
         const hostile = pl && atWar(G, pl, g.o);
         ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(x + 1.5, y + 2, W, H);
@@ -482,7 +493,7 @@ export class MapView {
         else { ctx.moveTo(x + 3.5, y + 3.5); ctx.lineTo(x + 2.5 + bw, y + 2.5 + bh); ctx.moveTo(x + 2.5 + bw, y + 3.5); ctx.lineTo(x + 3.5, y + 2.5 + bh); }
         ctx.stroke();
         ctx.textAlign = 'center';
-        ctx.font = `700 ${Math.round(12 * f)}px system-ui, sans-serif`;
+        ctx.font = `700 ${Math.round(11 * f)}px system-ui, sans-serif`;
         ctx.fillStyle = lum(col) > 150 ? '#111' : '#fff';
         ctx.fillText(String(g.n), x + 3 + bw + (W - bw - 5) / 2, y + (H - 3) / 2);
         // organisation bar

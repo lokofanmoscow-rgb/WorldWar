@@ -367,7 +367,7 @@ function resolveBattle(G, r, atts) {
     const pl = G.player;
     if (pl && (atkTag === pl || defTag === pl)) {
       const won = (atkTag === pl) === (defLeft === 0);
-      news(G, `${won ? 'Победа' : 'Поражение'} в сражении за ${REG[r].name}`, won ? 'good' : 'bad', r);
+      news(G, `${won ? 'Победа' : 'Поражение'} в сражении за ${REG[r].name}`, 'battle', r);
     }
   } else G.battles[r] = b;
   return b;

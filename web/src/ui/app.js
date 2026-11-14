@@ -20,7 +20,7 @@ import { $, esc, ic, flag, bar, btn } from './dom.js';
 export const PANELS = {};      // name -> { title, render(app, arg) }
 export const A = {};           // action name -> handler(app, ...args)
 
-const SPEED_MS = [0, 1400, 650, 300, 120, 0];
+const SPEED_MS = [0, 1000, 500, 220, 90, 0];
 const NAV = [
   ['country', 'Страна', 'country'], ['focus', 'Цели', 'focus'], ['research', 'Наука', 'research'], ['build', 'Стройка', 'build'],
   ['prod', 'Заводы', 'prod'], ['army', 'Армия', 'army'], ['air', 'Авиация', 'air'], ['navy', 'Флот', 'navy'], ['diplo', 'Дипломатия', 'diplo'], ['more', 'Ещё', 'more'],
@@ -115,7 +115,7 @@ export const app = {
     let n = 0;
     if (this.speed >= 5) {
       const t0 = performance.now();
-      do { this.day(); n++; } while (performance.now() - t0 < 12 && !this.paused && n < 6);
+      do { this.day(); n++; } while (performance.now() - t0 < 10 && !this.paused && n < 2 && $('#modal').classList.contains('hidden'));
     } else {
       this.acc += Math.min(dt, 500);
       const ms = SPEED_MS[this.speed];
@@ -140,7 +140,7 @@ export const app = {
       const idx = G.news.length - ((G._newsSeq || 0) - this.lastNews);
       this.lastNews++;
       const n = G.news[idx];
-      if (n && (n.k !== 'info' || true)) this.toast(n.t, n.k, n.k === 'war' ? 7000 : 4200, n.r);
+      if (n && n.k !== 'info' && n.k !== 'battle' && (this.speed < 5 || n.k === 'war' || n.k === 'diplo' || n.k === 'bad')) this.toast(n.t, n.k, n.k === 'war' ? 7000 : 4200, n.r);
     }
     if (now - this.lastHud > 240) { this.hud(); this.timebar(); this.lastHud = now; }
     if (this.panel && now - this.lastPanel > 900 && !this.touching) this.renderPanel(true);
@@ -340,16 +340,20 @@ export const app = {
     if (this.pick) { if (h.type === 'stack' || h.type === 'battle') this.tapRegion(h.r, long); else if (h.type === 'fleet') this.tapSea(h.z); return; }
     const sel = this.view.sel;
     if (h.type === 'stack') {
-      if (me && h.o === me.tag && !long) {
+      const has = me && Array.from(sel.divs).some((id) => G.divs[id]);
+      const own = me && h.o === me.tag;
+      // with troops selected a tap on another region is an order; a long press selects that stack instead
+      if (has && !long && !(own && Array.from(sel.divs).every((id) => !G.divs[id] || G.divs[id].r === h.r))) { this.tapRegion(h.r, false); return; }
+      if (own) {
         const ids = divsIn(G, h.r).filter((d) => d.o === me.tag && !d.ret).map((d) => d.id);
         const same = ids.length === sel.divs.size && ids.every((id) => sel.divs.has(id));
-        if (same) { this.open('sel'); return; }
+        if (same && !long) { this.open('sel'); return; }
         sel.divs = new Set(ids); sel.region = h.r; sel.sea = -1; sel.fleet = null;
         this.card = { type: 'sel' };
         this.renderCard(); this.view.invalidate();
+        if (long) this.toast(`Выбрано дивизий: ${ids.length}`, 'info', 1500);
         return;
       }
-      if (me && sel.divs.size && !long) { this.tapRegion(h.r, false); return; }
       this.tapRegion(h.r, true);
     } else if (h.type === 'battle') {
       if (me && sel.divs.size && !long) { this.tapRegion(h.r, false); return; }
@@ -413,7 +417,7 @@ export const app = {
       h += `<h3>${flag(me.tag)} Выбрано дивизий: ${ids.length}${X}</h3>`;
       h += `<div class="sub">${esc(REG[r0].name)} · ${Object.keys(byT).map((k) => `${esc(k)} ×${byT[k]}`).join(', ')}</div>`;
       h += `<div class="grid2"><div>Организация ${pct(org / ids.length)}${bar(org / ids.length, 'g')}</div><div>Численность ${pct(str / ids.length)}${bar(str / ids.length)}</div></div>`;
-      h += `<div class="muted" style="margin-top:5px">Нажмите на регион на карте — марш или атака. За морем — переброска или десант.</div>`;
+      h += `<div class="muted" style="margin-top:5px">Нажмите на регион — марш или атака (за морем — переброска или десант). Долгое нажатие на другой отряд — выбрать его.</div>`;
       h += `<div class="acts">${btn(`${ic('log')} Список`, 'open|sel', 'sm')}${moving ? btn(`${ic('stop')} Стоп`, 'selstop', 'sm') : ''}${man ? btn(`${ic('auto')} Отдать Генштабу`, 'selauto|0', 'sm') : btn(`${ic('lock')} Держать вручную`, 'selauto|1', 'sm')}</div>`;
     } else if (c.type === 'sea') {
       const z = SEA[c.z];

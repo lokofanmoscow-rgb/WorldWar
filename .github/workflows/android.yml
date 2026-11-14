@@ -1,0 +1,39 @@
+name: Build APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Web bundle and simulation test
+        working-directory: web
+        run: |
+          npm ci
+          npm test
+          npm run build
+
+      - name: Android SDK packages
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0" > /dev/null
+
+      - name: Build APK
+        working-directory: android
+        run: ./build-apk.sh build/WorldWar.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WorldWar-apk
+          path: android/build/WorldWar.apk

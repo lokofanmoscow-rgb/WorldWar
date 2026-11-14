@@ -49,11 +49,11 @@ export const TIER_ROMAN = ['', 'I', 'II', 'III', 'IV', 'V'];
 /** Ships built by dockyards */
 export const SHIP = {
   convoy: { name: 'Транспорты',  short: 'Конвои',     cost: 70,   res: { steel: 1 }, maxDock: 10, tech: null },
-  dd:     { name: 'Эсминцы',     short: 'Эсминцы',    cost: 520,  res: { steel: 2, oil: 1 }, maxDock: 10, tech: 'dd',  pow: 4,  hp: 25,  asw: 8, aa: 1,  cap: 0 },
-  ss:     { name: 'Подводные лодки', short: 'Подлодки', cost: 380, res: { steel: 2, oil: 1 }, maxDock: 10, tech: 'ss', pow: 7,  hp: 16,  asw: 0, aa: 0,  cap: 0, sub: 1 },
-  cl:     { name: 'Крейсеры',    short: 'Крейсеры',   cost: 1700, res: { steel: 3, chr: 1, oil: 1 }, maxDock: 5, tech: 'cl', pow: 14, hp: 70,  asw: 1, aa: 4,  cap: 0 },
-  bb:     { name: 'Линкоры',     short: 'Линкоры',    cost: 5800, res: { steel: 5, chr: 3, oil: 2 }, maxDock: 5, tech: 'bb', pow: 48, hp: 260, asw: 0, aa: 8,  cap: 1 },
-  cv:     { name: 'Авианосцы',   short: 'Авианосцы',  cost: 6200, res: { steel: 4, chr: 2, oil: 2, alu: 2 }, maxDock: 5, tech: 'cv', pow: 40, hp: 150, asw: 2, aa: 10, cap: 1, air: 1 },
+  dd:     { name: 'Эсминцы', one: 'эсминец',     short: 'Эсминцы',    cost: 520,  res: { steel: 2, oil: 1 }, maxDock: 10, tech: 'dd',  pow: 4,  hp: 25,  asw: 8, aa: 1,  cap: 0 },
+  ss:     { name: 'Подводные лодки', one: 'подводная лодка', short: 'Подлодки', cost: 380, res: { steel: 2, oil: 1 }, maxDock: 10, tech: 'ss', pow: 7,  hp: 16,  asw: 0, aa: 0,  cap: 0, sub: 1 },
+  cl:     { name: 'Крейсеры', one: 'крейсер',    short: 'Крейсеры',   cost: 1700, res: { steel: 3, chr: 1, oil: 1 }, maxDock: 5, tech: 'cl', pow: 14, hp: 70,  asw: 1, aa: 4,  cap: 0 },
+  bb:     { name: 'Линкоры', one: 'линкор',     short: 'Линкоры',    cost: 5800, res: { steel: 5, chr: 3, oil: 2 }, maxDock: 5, tech: 'bb', pow: 48, hp: 260, asw: 0, aa: 8,  cap: 1 },
+  cv:     { name: 'Авианосцы', one: 'авианосец',   short: 'Авианосцы',  cost: 6200, res: { steel: 4, chr: 2, oil: 2, alu: 2 }, maxDock: 5, tech: 'cv', pow: 40, hp: 150, asw: 2, aa: 10, cap: 1, air: 1 },
 };
 export const SHIP_KEYS = ['dd', 'cl', 'bb', 'cv', 'ss'];
 
