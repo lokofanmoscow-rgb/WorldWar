@@ -95,16 +95,16 @@ export function tick(G) {
   checkCapitulations(G);
   diploTick(G);
   eventsTick(G);
-  if (weekly) {
-    tradeTick(G);
-    for (const c of list) {
-      if (!c.alive || c.capit) continue;
-      c._vpLostCache = isAtWar(G, c.tag) ? vpLost(G, c.tag).ratio : 0;
-      fuelTick(G, c);
-      lanesTick(G, c);
-      weeklyTick(G, c);
-      reinforceTick(G, c);
-    }
+  if (weekly) tradeTick(G);
+  // weekly bookkeeping of each country falls on its own weekday, which keeps the per-day cost even
+  for (let k = 0; k < list.length; k++) {
+    const c = list[k];
+    if (!c.alive || c.capit || (G.day + k) % 7 !== 0) continue;
+    c._vpLostCache = isAtWar(G, c.tag) ? vpLost(G, c.tag).ratio : 0;
+    fuelTick(G, c);
+    lanesTick(G, c);
+    weeklyTick(G, c);
+    reinforceTick(G, c);
   }
   for (const c of list) {
     if (!c.alive || c.capit) continue;
